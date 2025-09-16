@@ -68,11 +68,11 @@ exp.listen(portServ, function () {
 var aWss = expressWs.getWss('/echo');
 var WebSocket = require('ws');
 aWss.broadcast = function broadcast(data) {
-    console.log("Broadcast aux clients navigateur : %s", data);
+    console.log('Broadcast aux clients navigateur : %s', data);
     aWss.clients.forEach(function each(client) {
         if (client.readyState == WebSocket.OPEN) {
             client.send(data, function ack(error) {
-                console.log("    -  %s-%s", client._socket.remoteAddress,
+                console.log('    -  %s-%s', client._socket.remoteAddress,
                     client._socket.remotePort);
                 if (error) {
                     console.log('ERREUR websocket broadcast : %s', error.toString());
@@ -82,4 +82,47 @@ aWss.broadcast = function broadcast(data) {
     });
 }; 
 
+var question = '?'; //var stockage questions sous forme char
+var bonneReponse = 0;//var stockage la bonne reponse 
 
+// Connexion des clients a la WebSocket /qr et evenements associés 
+// Questions/reponses 
+exp.ws('/qr', function (ws, req) { 
+    console.log('Connection WebSocket %s sur le port %s',
+        req.connection.remoteAddress, req.connection.remotePort);
+    NouvelleQuestion();
+
+    ws.on('message', TraiterReponse);
+
+    //deconnection du websocket
+    ws.on('close', function (reasonCode, description) {
+        console.log('Deconnexion WebSocket %s sur le port %s',
+            req.connection.remoteAddress, req.connection.remotePort);
+    });
+
+    //fonction traitement de la reponse
+    function TraiterReponse(message) { 
+        console.log('De %s %s, message :%s', req.connection.remoteAddress,
+            req.connection.remotePort, message);
+        if (message == bonneReponse) {
+            message = 'bonne reponse';
+        }
+        else message = 'mauvaise reponse';
+        ws.send(message);
+        setTimeout(NouvelleQuestion, 3000);
+    }
+
+    //creation random nouvelle question
+    function NouvelleQuestion() {
+        var x = GetRandomInt(11);
+        var y = GetRandomInt(11);
+        question = x + '*' + y + ' =  ?';
+        bonneReponse = x * y;
+        aWss.broadcast(question);
+    }
+
+    function GetRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
+}); 
