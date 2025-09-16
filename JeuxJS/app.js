@@ -113,13 +113,25 @@ exp.ws('/qr', function (ws, req) {
     }
 
     //creation random nouvelle question
+    //function NouvelleQuestion() {
+    //  var x = GetRandomInt(11);
+    //var y = GetRandomInt(11);
+    //    question = x + '*' + y + ' =  ?';
+    //  bonneReponse = x * y;
+    //aWss.broadcast(question);
+    //}
+
+
+    //creation random nouvelle question
     function NouvelleQuestion() {
-        var x = GetRandomInt(11);
-        var y = GetRandomInt(11);
-        question = x + '*' + y + ' =  ?';
-        bonneReponse = x * y;
+        var n = GetRandomInt(256); // entier entre 0 et 256
+        var binaire = n.toString(2).padStart(8, '0'); // representation binaire sur 8bits
+        question = 'convertir ' + binaire + ' de base 2 en base 10 = ?';
+        bonneReponse = n; // la bonne reponse
         aWss.broadcast(question);
     }
+
+
 
     function GetRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
